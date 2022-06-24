@@ -1,13 +1,17 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import './index.scss';
-
+import { ChakraProvider } from '@chakra-ui/react';
 import Editor from './components/Editor';
 import './stylesheets/main.scss';
+import { createRoot } from 'react-dom/client';
 
-ReactDOM.render(
+const container = document.getElementById('root');
+const root = createRoot(container!);
+
+root.render(
   <React.StrictMode>
-    <Editor />
-  </React.StrictMode>,
-  document.getElementById('root')
+    <ChakraProvider>
+      <Editor />
+    </ChakraProvider>
+  </React.StrictMode>
 );

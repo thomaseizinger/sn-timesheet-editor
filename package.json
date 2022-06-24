@@ -65,6 +65,10 @@
     ]
   },
   "devDependencies": {
+    "@chakra-ui/react": "^2.2.1",
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
+    "@js-joda/core": "^5.2.0",
     "@standardnotes/editor-kit": "2.2.5",
     "@standardnotes/stylekit": "5.29.3",
     "@testing-library/dom": "^8.13.0",
@@ -76,6 +80,7 @@
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.12",
     "@types/react-dom": "^18.0.5",
+    "framer-motion": "^6.3.15",
     "gh-pages": "^4.0.0",
     "http-server": "^14.1.1",
     "husky": "^8.0.1",
@@ -87,6 +92,7 @@
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "source-map-explorer": "^2.5.2",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.3",
+    "usehooks-ts": "^2.6.0"
   }
 }
