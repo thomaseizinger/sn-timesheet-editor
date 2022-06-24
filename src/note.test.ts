@@ -2,12 +2,13 @@ import { insertRecord, parseRecords } from './note';
 import { Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 
 test('can parse a record', () => {
-  let record = 'libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z';
+  let record = '1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z';
 
   let records = parseRecords(record);
 
   expect(records).toStrictEqual([
     {
+      id: 1,
       project: 'libp2p',
       start: OffsetDateTime.ofInstant(
         Instant.ofEpochMilli(1656088515000),
@@ -22,7 +23,7 @@ test('can parse a record', () => {
 });
 
 test('can insert a new record', () => {
-  let records = 'libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z';
+  let records = '1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z';
 
   let newRecords = insertRecord(
     records,
@@ -31,7 +32,7 @@ test('can insert a new record', () => {
   );
 
   expect(newRecords).toStrictEqual(
-    `xtra,2022-06-24T18:38:31Z,
-libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
+    `2,xtra,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
   );
 });

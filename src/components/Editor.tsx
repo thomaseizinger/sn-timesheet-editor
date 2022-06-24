@@ -24,10 +24,10 @@ import formatSeconds from '../formatSeconds';
 
 export function useNote(): [string, (newText: string) => void] {
   let [note, setNote] = useState('');
-  let editorKitReference = useRef<EditorKit>();
+  let [editorKit, setEditorKit] = useState<EditorKit | null>(null);
 
   useEffect(() => {
-    editorKitReference.current = new EditorKit(
+    let editorKit = new EditorKit(
       {
         setEditorRawText: (text: string) => setNote(text),
         insertRawText: (text: string) => setNote(text),
@@ -37,12 +37,13 @@ export function useNote(): [string, (newText: string) => void] {
         supportsFileSafe: false,
       }
     );
-  }, []);
+    setEditorKit(editorKit);
+  }, [setEditorKit]);
 
   return [
     note,
     (newText: string) => {
-      editorKitReference.current!.onEditorValueChanged(newText);
+      editorKit?.onEditorValueChanged(newText);
       setNote(newText);
     },
   ];
@@ -112,7 +113,7 @@ export default function Editor() {
                 <Td>-</Td>
               </Tr>
               {records.map((record) => (
-                <Tr>
+                <Tr key={record.id}>
                   <Td>{record.project}</Td>
                   <Td>
                     {record.start.format(
