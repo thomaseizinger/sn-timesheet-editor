@@ -1,34 +1,28 @@
-import React, { useRef, useState } from 'react';
-import EditorKit, { EditorKitDelegate } from '@standardnotes/editor-kit';
+import React, { useEffect, useRef, useState } from 'react';
+import EditorKit from '@standardnotes/editor-kit';
 
 export function useNote(): [string, (newText: string) => void] {
   let [note, setNote] = useState('');
-  const delegate: EditorKitDelegate = {
-    /** This loads every time a different note is loaded */
-    setEditorRawText: (text: string) => {
-      setNote(text);
+  let editorKitReference = useRef<EditorKit>();
+
+  useEffect(() => {
+    editorKitReference.current = new EditorKit(
+      {
+        setEditorRawText: (text: string) => setNote(text),
+      },
+      {
+        mode: 'plaintext',
+      }
+    );
+  }, []);
+
+  return [
+    note,
+    (newText: string) => {
+      editorKitReference.current?.onEditorValueChanged(newText);
+      setNote(newText);
     },
-    insertRawText: (text: string) => {
-      setNote(text);
-    },
-    clearUndoHistory: () => {},
-    getElementsBySelector: () => [],
-  };
-
-  let editorKitReference = useRef(
-    new EditorKit(delegate, {
-      mode: 'plaintext',
-      supportsFileSafe: false,
-    })
-  );
-
-  const updateNote = (newText: string) => {
-    console.log('Saving note ...');
-    editorKitReference.current.onEditorValueChanged(newText);
-    setNote(newText);
-  };
-
-  return [note, updateNote];
+  ];
 }
 
 export enum HtmlElementId {
