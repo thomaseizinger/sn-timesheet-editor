@@ -1,4 +1,5 @@
 import { DateTimeFormatter, OffsetDateTime } from '@js-joda/core';
+import { indexOf } from 'lodash';
 
 export interface Record {
   id: number;
@@ -40,4 +41,13 @@ export function insertRecord(
   )},`;
 
   return newRecord.concat('\n', note);
+}
+
+export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
+  let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
+  let newFirst = `${first}${end.format(
+    DateTimeFormatter.ISO_OFFSET_DATE_TIME
+  )}`;
+
+  return [newFirst].concat(...remaining).join('\n');
 }

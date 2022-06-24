@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import EditorKit from '@standardnotes/editor-kit';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Input,
@@ -12,7 +11,7 @@ import {
   Tr,
   useInterval,
 } from '@chakra-ui/react';
-import { insertRecord, parseRecords } from '../note';
+import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
 import {
   DateTimeFormatter,
   Duration,
@@ -21,13 +20,14 @@ import {
   ZoneId,
 } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
+import EditorKitBase from '@standardnotes/editor-kit';
 
 export function useNote(): [string, (newText: string) => void] {
   let [note, setNote] = useState('');
-  let [editorKit, setEditorKit] = useState<EditorKit | null>(null);
+  let [editorKit, setEditorKit] = useState<EditorKitBase | null>(null);
 
   useEffect(() => {
-    let editorKit = new EditorKit(
+    let editorKit = new EditorKitBase(
       {
         setEditorRawText: (text: string) => setNote(text),
         insertRawText: (text: string) => setNote(text),
@@ -56,6 +56,7 @@ export enum HtmlElementId {
 
 export default function Editor() {
   const [note, saveNote] = useNote();
+  const [nextProject, setNextProject] = useState('');
 
   let records = parseRecords(note);
 
@@ -66,15 +67,15 @@ export default function Editor() {
         id={HtmlElementId.snComponent}
         tabIndex={0}
       >
-        <textarea
-          id={HtmlElementId.textarea}
-          name="text"
-          className={'sk-input contrast textarea'}
-          placeholder="Type here. Text in this textarea is automatically saved in Standard Notes"
-          rows={15}
-          value={note}
-          onChange={(event) => saveNote(event.target.value)}
-        />
+        {/*<textarea*/}
+        {/*  id={HtmlElementId.textarea}*/}
+        {/*  name="text"*/}
+        {/*  className={'sk-input contrast textarea'}*/}
+        {/*  placeholder="Type here. Text in this textarea is automatically saved in Standard Notes"*/}
+        {/*  rows={15}*/}
+        {/*  value={note}*/}
+        {/*  onChange={(event) => saveNote(event.target.value)}*/}
+        {/*/>*/}
         <TableContainer>
           <Table variant="simple" size="lg">
             <Thead>
@@ -88,7 +89,10 @@ export default function Editor() {
             <Tbody>
               <Tr>
                 <Td>
-                  <Input />
+                  <Input
+                    value={nextProject}
+                    onChange={(event) => setNextProject(event.target.value)}
+                  />
                 </Td>
                 <Td>
                   <Button
@@ -96,20 +100,17 @@ export default function Editor() {
                     onClick={() => {
                       let newNote = insertRecord(
                         note,
-                        'test',
+                        nextProject,
                         OffsetDateTime.now(ZoneId.UTC)
                       );
+                      setNextProject('');
                       saveNote(newNote);
                     }}
                   >
                     Start
                   </Button>
                 </Td>
-                <Td>
-                  <Button width="100%" disabled>
-                    Stop
-                  </Button>
-                </Td>
+                <Td>-</Td>
                 <Td>-</Td>
               </Tr>
               {records.map((record) => (
@@ -124,7 +125,18 @@ export default function Editor() {
                     {record.end ? (
                       record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                     ) : (
-                      <Button width="100%">Stop</Button>
+                      <Button
+                        width="100%"
+                        onClick={() => {
+                          let newNote = stopCurrentRecord(
+                            note,
+                            OffsetDateTime.now(ZoneId.UTC)
+                          );
+                          saveNote(newNote);
+                        }}
+                      >
+                        Stop
+                      </Button>
                     )}
                   </Td>
                   <Td>
