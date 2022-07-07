@@ -1,7 +1,7 @@
 {
-  "name": "standard-notes-editor-template-cra-typescript",
+  "name": "standard-notes-timesheets",
   "version": "0.1.0",
-  "description": "Template for building editors for Standard Notes using Create React App and TypeScript",
+  "description": "Maintain timesheets with Standard Notes",
   "keywords": [
     "Standard Notes",
     "Standard Notes Extensions"
