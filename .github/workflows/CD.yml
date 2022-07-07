@@ -16,6 +16,8 @@ jobs:
           cache: yarn
           node-version: 16
 
+      - run: yarn
+
       - run: yarn build
 
       - uses: crazy-max/ghaction-github-pages@v2
