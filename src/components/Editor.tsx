@@ -67,15 +67,6 @@ export default function Editor() {
         id={HtmlElementId.snComponent}
         tabIndex={0}
       >
-        {/*<textarea*/}
-        {/*  id={HtmlElementId.textarea}*/}
-        {/*  name="text"*/}
-        {/*  className={'sk-input contrast textarea'}*/}
-        {/*  placeholder="Type here. Text in this textarea is automatically saved in Standard Notes"*/}
-        {/*  rows={15}*/}
-        {/*  value={note}*/}
-        {/*  onChange={(event) => saveNote(event.target.value)}*/}
-        {/*/>*/}
         <TableContainer>
           <Table variant="simple" size="lg">
             <Thead>
