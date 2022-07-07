@@ -20,15 +20,18 @@ import {
   ZoneId,
 } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
-import { useNote } from '../useNote';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
   textarea = 'textarea',
 }
 
-export default function Editor() {
-  const [note, saveNote] = useNote();
+interface Props {
+  note: string;
+  saveNote: (newNote: string) => void;
+}
+
+export default function Editor({ note, saveNote }: Props) {
   const [nextProject, setNextProject] = useState('');
 
   let records = parseRecords(note);
