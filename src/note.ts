@@ -1,5 +1,4 @@
 import { DateTimeFormatter, OffsetDateTime } from '@js-joda/core';
-import { indexOf } from 'lodash';
 
 export interface Record {
   id: number;
@@ -9,7 +8,7 @@ export interface Record {
 }
 
 export function parseRecords(note: string): Record[] {
-  if (note.length == 0) {
+  if (note.length === 0) {
     return [];
   }
 
@@ -36,7 +35,7 @@ export function insertRecord(
 ): string {
   let lastIndex;
 
-  if (note.length == 0) {
+  if (note.length === 0) {
     lastIndex = 0;
   } else {
     lastIndex = parseInt(note.slice(0, note.indexOf(',')));
