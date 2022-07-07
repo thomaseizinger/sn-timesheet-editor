@@ -37,6 +37,21 @@ test('can insert a new record', () => {
   );
 });
 
+test('can insert a new record into empty note', () => {
+  let records = '';
+
+  let newRecords = insertRecord(
+    records,
+    'xtra',
+    OffsetDateTime.ofInstant(Instant.ofEpochMilli(1656095911000), ZoneId.UTC)
+  );
+
+  expect(newRecords).toStrictEqual(
+    `1,xtra,2022-06-24T18:38:31Z,
+`
+  );
+});
+
 test('can stop current record', () => {
   let records = `2,xtra,2022-06-24T18:38:31Z,
 1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`;

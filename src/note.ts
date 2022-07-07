@@ -34,7 +34,13 @@ export function insertRecord(
   project: string,
   start: OffsetDateTime
 ): string {
-  let lastIndex = parseInt(note.slice(0, note.indexOf(',')));
+  let lastIndex;
+
+  if (note.length == 0) {
+    lastIndex = 0;
+  } else {
+    lastIndex = parseInt(note.slice(0, note.indexOf(',')));
+  }
 
   const newRecord = `${lastIndex + 1},${project},${start.format(
     DateTimeFormatter.ISO_OFFSET_DATE_TIME
