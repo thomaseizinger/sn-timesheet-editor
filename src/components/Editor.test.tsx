@@ -29,7 +29,11 @@ test('UI renders stop button after clicking', () => {
   render(<LocalStateEditor />);
 
   let startButton = screen.getByRole('button', { name: 'Start' });
+  let projectInput = screen.getByRole('textbox'); // TODO: Add name here
 
+  fireEvent.change(projectInput, {
+    target: { value: 'Test' },
+  });
   fireEvent.click(startButton);
 
   let stopButton = screen.getByRole('button', { name: 'Stop' });

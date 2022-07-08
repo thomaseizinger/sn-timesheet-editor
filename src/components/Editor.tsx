@@ -64,6 +64,7 @@ export default function Editor({ note, saveNote }: Props) {
                 <Td>
                   <Button
                     width="100%"
+                    disabled={!nextProject}
                     onClick={() => {
                       let newNote = insertRecord(
                         note,
