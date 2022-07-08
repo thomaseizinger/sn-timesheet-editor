@@ -34,6 +34,18 @@ function parseRecord(line: string) {
   };
 }
 
+function printRecord(record: Record): string {
+  const id = record.id;
+  const project = record.project;
+
+  const start = record.start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+  const end = record.end
+    ? record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    : '';
+
+  return `${id},${project},${start},${end}`;
+}
+
 export function insertRecord(
   note: string,
   project: string,
@@ -47,18 +59,22 @@ export function insertRecord(
     lastIndex = parseInt(note.slice(0, note.indexOf(',')));
   }
 
-  const newRecord = `${lastIndex + 1},${project},${start.format(
-    DateTimeFormatter.ISO_OFFSET_DATE_TIME
-  )},`;
+  const newRecord = printRecord({
+    id: lastIndex + 1,
+    project,
+    start,
+  });
 
   return newRecord.concat('\n', note);
 }
 
 export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
-  let newFirst = `${first}${end.format(
-    DateTimeFormatter.ISO_OFFSET_DATE_TIME
-  )}`;
+
+  let newFirst = printRecord({
+    ...parseRecord(first),
+    end,
+  });
 
   return [newFirst].concat(...remaining).join('\n');
 }
