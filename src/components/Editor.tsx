@@ -13,7 +13,8 @@ import {
 } from '@chakra-ui/react';
 import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
 import {
-  DateTimeFormatter,
+  ChronoField,
+  DateTimeFormatterBuilder,
   Duration,
   Instant,
   OffsetDateTime,
@@ -85,13 +86,11 @@ export default function Editor({ note, saveNote }: Props) {
                 <Tr key={record.id}>
                   <Td>{record.project}</Td>
                   <Td>
-                    {record.start.format(
-                      DateTimeFormatter.ISO_OFFSET_DATE_TIME
-                    )}
+                    <FormattedDatetime timestamp={record.start} />
                   </Td>
                   <Td>
                     {record.end ? (
-                      record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                      <FormattedDatetime timestamp={record.end} />
                     ) : (
                       <Button
                         width="100%"
@@ -122,6 +121,32 @@ export default function Editor({ note, saveNote }: Props) {
       </div>
     </>
   );
+}
+
+interface FormattedDateTimeProps {
+  timestamp: OffsetDateTime;
+}
+
+function FormattedDatetime({ timestamp }: FormattedDateTimeProps) {
+  const formatted = timestamp
+    .atZoneSameInstant(ZoneId.systemDefault())
+    .format(
+      new DateTimeFormatterBuilder()
+        .appendValue(ChronoField.YEAR)
+        .appendLiteral('-')
+        .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+        .appendLiteral('-')
+        .appendValue(ChronoField.DAY_OF_MONTH, 2)
+        .appendLiteral(' ')
+        .appendValue(ChronoField.HOUR_OF_DAY, 2)
+        .appendLiteral(':')
+        .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+        .appendLiteral(':')
+        .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+        .toFormatter()
+    );
+
+  return <span>{formatted}</span>;
 }
 
 interface FixedDurationProps {
