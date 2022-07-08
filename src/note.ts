@@ -21,31 +21,6 @@ export function parseRecords(note: string): Record[] {
   });
 }
 
-function parseRecord(line: string) {
-  let [id, project, start, end] = line.split(',');
-
-  return {
-    id: parseInt(id),
-    project,
-    start: OffsetDateTime.parse(start, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-    end: end
-      ? OffsetDateTime.parse(end, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-      : undefined,
-  };
-}
-
-function printRecord(record: Record): string {
-  const id = record.id;
-  const project = record.project;
-
-  const start = record.start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-  const end = record.end
-    ? record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    : '';
-
-  return `${id},${project},${start},${end}`;
-}
-
 export function insertRecord(
   note: string,
   project: string,
@@ -77,4 +52,29 @@ export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   });
 
   return [newFirst].concat(...remaining).join('\n');
+}
+
+function parseRecord(line: string) {
+  let [id, project, start, end] = line.split(',');
+
+  return {
+    id: parseInt(id),
+    project,
+    start: OffsetDateTime.parse(start, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+    end: end
+      ? OffsetDateTime.parse(end, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      : undefined,
+  };
+}
+
+function printRecord(record: Record): string {
+  const id = record.id;
+  const project = record.project;
+
+  const start = record.start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+  const end = record.end
+    ? record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    : '';
+
+  return `${id},${project},${start},${end}`;
 }
