@@ -12,7 +12,13 @@ export function parseRecords(note: string): Record[] {
     return [];
   }
 
-  return note.split('\n').map(parseRecord);
+  return note.split('\n').flatMap((record) => {
+    try {
+      return [parseRecord(record)];
+    } catch (e) {
+      return [];
+    }
+  });
 }
 
 function parseRecord(line: string) {
