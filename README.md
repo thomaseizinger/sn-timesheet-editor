@@ -4,13 +4,13 @@
 
 This repository contains an editor for maintaining a simple timesheet in CSV format.
 
-## Screencast
+## UI
 
-[//]: # 'TODO Include link to screencast.'
+![image](https://user-images.githubusercontent.com/5486389/177994989-8f16fb42-b41d-458f-a5fd-8e3d215b848d.png)
 
 ## Installation
 
-[//]: # 'TODO Include install instructions'
+Install as a custom editor from this URL: https://eizinger.io/sn-timesheet-editor/ext.json
 
 ## Features
 
