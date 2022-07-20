@@ -20,7 +20,7 @@ test('UI renders table headers', () => {
 test('UI renders start but not stop button', () => {
   render(<LocalStateEditor />);
 
-  let startButton = screen.getByRole('button', { name: 'Start' });
+  let startButton = screen.getByRole('button', { name: 'Start timer' });
 
   expect(startButton).toBeInTheDocument();
 });
@@ -28,7 +28,7 @@ test('UI renders start but not stop button', () => {
 test('UI renders stop button after clicking', () => {
   render(<LocalStateEditor />);
 
-  let startButton = screen.getByRole('button', { name: 'Start' });
+  let startButton = screen.getByRole('button', { name: 'Start timer' });
   let projectInput = screen.getByRole('textbox'); // TODO: Add name here
 
   fireEvent.change(projectInput, {
@@ -36,7 +36,7 @@ test('UI renders stop button after clicking', () => {
   });
   fireEvent.click(startButton);
 
-  let stopButton = screen.getByRole('button', { name: 'Stop' });
+  let stopButton = screen.getByRole('button', { name: 'Stop timer' });
 
   expect(stopButton).toBeInTheDocument();
 });

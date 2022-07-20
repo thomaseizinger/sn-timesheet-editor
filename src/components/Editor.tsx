@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Button,
   Input,
+  SimpleGrid,
   Table,
   TableContainer,
   Tbody,
@@ -44,6 +45,35 @@ export default function Editor({ note, saveNote }: Props) {
         id={HtmlElementId.snComponent}
         tabIndex={0}
       >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            let newNote = insertRecord(
+              note,
+              nextProject,
+              OffsetDateTime.now(ZoneId.UTC)
+            );
+            setNextProject('');
+            saveNote(newNote);
+          }}
+        >
+          <SimpleGrid columns={2}>
+            <Input
+              height="100%"
+              placeholder={'What are you working on?'}
+              value={nextProject}
+              onChange={(event) => setNextProject(event.target.value)}
+            />
+            <Button
+              width="100%"
+              padding="2rem"
+              type="submit"
+              disabled={!nextProject}
+            >
+              Start timer
+            </Button>
+          </SimpleGrid>
+        </form>
         <TableContainer>
           <Table variant="simple" size="lg">
             <Thead>
@@ -55,33 +85,6 @@ export default function Editor({ note, saveNote }: Props) {
               </Tr>
             </Thead>
             <Tbody>
-              <Tr>
-                <Td>
-                  <Input
-                    value={nextProject}
-                    onChange={(event) => setNextProject(event.target.value)}
-                  />
-                </Td>
-                <Td>
-                  <Button
-                    width="100%"
-                    disabled={!nextProject}
-                    onClick={() => {
-                      let newNote = insertRecord(
-                        note,
-                        nextProject,
-                        OffsetDateTime.now(ZoneId.UTC)
-                      );
-                      setNextProject('');
-                      saveNote(newNote);
-                    }}
-                  >
-                    Start
-                  </Button>
-                </Td>
-                <Td>-</Td>
-                <Td>-</Td>
-              </Tr>
               {records.map((record) => (
                 <Tr key={record.id}>
                   <Td>{record.project}</Td>
@@ -102,7 +105,7 @@ export default function Editor({ note, saveNote }: Props) {
                           saveNote(newNote);
                         }}
                       >
-                        Stop
+                        Stop timer
                       </Button>
                     )}
                   </Td>

@@ -1,0 +1,13 @@
+{
+  "identifier": "io.eizinger.sn-timesheet",
+  "name": "Timesheet",
+  "content_type": "SN|Component",
+  "area": "editor-editor",
+  "version": "0.1.0",
+  "description": "Maintain timesheets with Standard Notes",
+  "url": "http://localhost:8001/index.html",
+  "download_url": "",
+  "latest_url": "",
+  "marketing_url": "https://github.com/thomaseizinger/sn-timesheet-editor",
+  "thumbnail_url": ""
+}
