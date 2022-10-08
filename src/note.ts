@@ -1,24 +1,41 @@
 import { DateTimeFormatter, OffsetDateTime } from '@js-joda/core';
 
-export interface Record {
+export interface CompletedRecord {
   id: number;
   project: string;
   start: OffsetDateTime;
-  end?: OffsetDateTime;
+  end: OffsetDateTime;
 }
 
-export function parseRecords(note: string): Record[] {
+export interface ActiveRecord {
+  id: number;
+  project: string;
+  start: OffsetDateTime;
+}
+
+export function parseRecords(
+  note: string
+): [CompletedRecord[], ActiveRecord | undefined] {
   if (note.length === 0) {
-    return [];
+    return [[], undefined];
   }
 
-  return note.split('\n').flatMap((record) => {
+  let completedRecords = [];
+
+  let activeRecord;
+
+  for (const line of note.split('\n')) {
     try {
-      return [parseRecord(record)];
-    } catch (e) {
-      return [];
-    }
-  });
+      let record = parseRecord(line);
+      if (!('end' in record)) {
+        activeRecord = record;
+      } else {
+        completedRecords.push(record);
+      }
+    } catch (e) {}
+  }
+
+  return [completedRecords, activeRecord];
 }
 
 export function insertRecord(
@@ -34,7 +51,7 @@ export function insertRecord(
     lastIndex = parseInt(note.slice(0, note.indexOf(',')));
   }
 
-  const newRecord = printRecord({
+  const newRecord = printActiveRecord({
     id: lastIndex + 1,
     project,
     start,
@@ -46,7 +63,7 @@ export function insertRecord(
 export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
 
-  let newFirst = printRecord({
+  let newFirst = printCompletedRecord({
     ...parseRecord(first),
     end,
   });
@@ -54,27 +71,46 @@ export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   return [newFirst].concat(...remaining).join('\n');
 }
 
-function parseRecord(line: string) {
+function parseRecord(line: string): CompletedRecord | ActiveRecord {
   let [id, project, start, end] = line.split(',');
 
-  return {
-    id: parseInt(id),
-    project,
-    start: OffsetDateTime.parse(start, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-    end: end
-      ? OffsetDateTime.parse(end, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-      : undefined,
-  };
+  if (!end) {
+    return {
+      id: parseInt(id),
+      project,
+      start: OffsetDateTime.parse(
+        start,
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME
+      ),
+    };
+  } else {
+    return {
+      id: parseInt(id),
+      project,
+      start: OffsetDateTime.parse(
+        start,
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME
+      ),
+      end: OffsetDateTime.parse(end, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+    };
+  }
 }
 
-function printRecord(record: Record): string {
+function printActiveRecord(record: ActiveRecord): string {
   const id = record.id;
   const project = record.project;
 
   const start = record.start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-  const end = record.end
-    ? record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    : '';
+
+  return `${id},${project},${start},`;
+}
+
+function printCompletedRecord(record: CompletedRecord): string {
+  const id = record.id;
+  const project = record.project;
+
+  const start = record.start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+  const end = record.end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
   return `${id},${project},${start},${end}`;
 }

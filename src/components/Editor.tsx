@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Box,
   Button,
   Input,
   SimpleGrid,
@@ -10,18 +11,12 @@ import {
   Th,
   Thead,
   Tr,
-  useInterval,
 } from '@chakra-ui/react';
 import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
-import {
-  ChronoField,
-  DateTimeFormatterBuilder,
-  Duration,
-  Instant,
-  OffsetDateTime,
-  ZoneId,
-} from '@js-joda/core';
+import { Duration, Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
+import { parseProjects } from '../project';
+import { useInterval } from 'usehooks-ts';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
@@ -31,19 +26,29 @@ export enum HtmlElementId {
 interface Props {
   note: string;
   saveNote: (newNote: string) => void;
+  setPreview: (newPreview: string) => void;
 }
 
-export default function Editor({ note, saveNote }: Props) {
+export default function Editor({ note, saveNote, setPreview }: Props) {
   const [nextProject, setNextProject] = useState('');
 
-  let records = parseRecords(note);
+  let [completedRecords, activeRecord] = parseRecords(note);
+  let projects = parseProjects(completedRecords);
+  let sumAllProjects = projects.reduce(
+    (sum, project) => sum.plus(project.totalTime),
+    Duration.ZERO
+  );
+  setPreview(`Total: ${formatSeconds(sumAllProjects.toMillis() / 1000)}`);
 
   return (
-    <>
-      <div
-        className={HtmlElementId.snComponent}
-        id={HtmlElementId.snComponent}
-        tabIndex={0}
+    <div
+      className={HtmlElementId.snComponent}
+      id={HtmlElementId.snComponent}
+      tabIndex={0}
+    >
+      <Box
+        borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
+        paddingTop={'1px'}
       >
         <form
           onSubmit={(e) => {
@@ -62,105 +67,90 @@ export default function Editor({ note, saveNote }: Props) {
               height="100%"
               placeholder={'What are you working on?'}
               value={nextProject}
+              border={'0px'}
+              borderRadius={0}
               onChange={(event) => setNextProject(event.target.value)}
             />
             <Button
-              width="100%"
               padding="2rem"
               type="submit"
+              borderRadius={0}
               disabled={!nextProject}
             >
               Start timer
             </Button>
           </SimpleGrid>
         </form>
-        <TableContainer>
-          <Table variant="simple" size="lg">
-            <Thead>
-              <Tr>
-                <Th>Project</Th>
-                <Th>Start</Th>
-                <Th>End</Th>
-                <Th>Duration</Th>
+      </Box>
+      <TableContainer>
+        <Table size="lg">
+          <Thead>
+            <Tr>
+              <Th>Project</Th>
+              <Th>Duration</Th>
+              <Th>Action</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {activeRecord && (
+              <Tr key="active" backgroundColor="green.50">
+                <Td>{activeRecord.project}</Td>
+                <Td>
+                  <DynamicDuration start={activeRecord.start} />
+                </Td>
+                <Td>
+                  <Button
+                    width="100%"
+                    onClick={() => {
+                      let newNote = stopCurrentRecord(
+                        note,
+                        OffsetDateTime.now(ZoneId.UTC)
+                      );
+                      saveNote(newNote);
+                    }}
+                  >
+                    Stop timer
+                  </Button>
+                </Td>
               </Tr>
-            </Thead>
-            <Tbody>
-              {records.map((record) => (
-                <Tr key={record.id}>
-                  <Td>{record.project}</Td>
-                  <Td>
-                    <FormattedDatetime timestamp={record.start} />
-                  </Td>
-                  <Td>
-                    {record.end ? (
-                      <FormattedDatetime timestamp={record.end} />
-                    ) : (
-                      <Button
-                        width="100%"
-                        onClick={() => {
-                          let newNote = stopCurrentRecord(
-                            note,
-                            OffsetDateTime.now(ZoneId.UTC)
-                          );
-                          saveNote(newNote);
-                        }}
-                      >
-                        Stop timer
-                      </Button>
-                    )}
-                  </Td>
-                  <Td>
-                    {record.end ? (
-                      <FixedDuration start={record.start} end={record.end} />
-                    ) : (
-                      <DynamicDuration start={record.start} />
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </div>
-    </>
+            )}
+            {projects.map((project) => (
+              <Tr key={project.name}>
+                <Td>{project.name}</Td>
+                <Td>
+                  <FixedDuration duration={project.totalTime} />
+                </Td>
+                <Td>
+                  <Button
+                    width="100%"
+                    disabled={!!activeRecord}
+                    onClick={() => {
+                      let newNote = insertRecord(
+                        note,
+                        project.name,
+                        OffsetDateTime.now(ZoneId.UTC)
+                      );
+                      saveNote(newNote);
+                    }}
+                  >
+                    Start timer
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </div>
   );
-}
-
-interface FormattedDateTimeProps {
-  timestamp: OffsetDateTime;
-}
-
-function FormattedDatetime({ timestamp }: FormattedDateTimeProps) {
-  const formatted = timestamp
-    .atZoneSameInstant(ZoneId.systemDefault())
-    .format(
-      new DateTimeFormatterBuilder()
-        .appendValue(ChronoField.YEAR)
-        .appendLiteral('-')
-        .appendValue(ChronoField.MONTH_OF_YEAR, 2)
-        .appendLiteral('-')
-        .appendValue(ChronoField.DAY_OF_MONTH, 2)
-        .appendLiteral(' ')
-        .appendValue(ChronoField.HOUR_OF_DAY, 2)
-        .appendLiteral(':')
-        .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-        .appendLiteral(':')
-        .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
-        .toFormatter()
-    );
-
-  return <span>{formatted}</span>;
 }
 
 interface FixedDurationProps {
-  start: OffsetDateTime;
-  end: OffsetDateTime;
+  duration: Duration;
 }
 
-function FixedDuration({ start, end }: FixedDurationProps) {
-  return (
-    <span>{formatSeconds(Duration.between(start, end).toMillis() / 1000)}</span>
-  );
+function FixedDuration({ duration }: FixedDurationProps) {
+  return <span>{formatSeconds(duration.toMillis() / 1000)}</span>;
 }
 
 interface DynamicDurationProps {
@@ -168,15 +158,16 @@ interface DynamicDurationProps {
 }
 
 function DynamicDuration({ start }: DynamicDurationProps) {
+  const duration = useDynamicDuration(start);
+
+  return <FixedDuration duration={duration} />;
+}
+
+function useDynamicDuration(start: OffsetDateTime) {
   let [end, setEnd] = useState(Instant.now());
   useInterval(() => {
     setEnd(Instant.now());
   }, 1000);
 
-  return (
-    <FixedDuration
-      start={start}
-      end={OffsetDateTime.ofInstant(end, ZoneId.UTC)}
-    />
-  );
+  return Duration.between(start, OffsetDateTime.ofInstant(end, ZoneId.UTC));
 }

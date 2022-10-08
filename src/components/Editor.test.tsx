@@ -9,11 +9,10 @@ test('UI renders table headers', () => {
     screen.getByRole('columnheader', { name: 'Project' })
   ).toBeInTheDocument();
   expect(
-    screen.getByRole('columnheader', { name: 'Start' })
-  ).toBeInTheDocument();
-  expect(screen.getByRole('columnheader', { name: 'End' })).toBeInTheDocument();
-  expect(
     screen.getByRole('columnheader', { name: 'Duration' })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole('columnheader', { name: 'Action' })
   ).toBeInTheDocument();
 });
 
@@ -44,5 +43,7 @@ test('UI renders stop button after clicking', () => {
 function LocalStateEditor() {
   let [note, saveNote] = useState('');
 
-  return <Editor note={note} saveNote={saveNote} />;
+  return (
+    <Editor note={note} saveNote={saveNote} setPreview={() => undefined} />
+  );
 }

@@ -4,7 +4,7 @@ import { Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 test('can parse a record', () => {
   let record = '1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z';
 
-  let records = parseRecords(record);
+  let [records, _activeRecord] = parseRecords(record);
 
   expect(records).toStrictEqual([
     {
