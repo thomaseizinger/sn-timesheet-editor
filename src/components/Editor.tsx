@@ -38,118 +38,116 @@ export default function Editor({ note, saveNote }: Props) {
   );
 
   return (
-    <>
-      <div
-        className={HtmlElementId.snComponent}
-        id={HtmlElementId.snComponent}
-        tabIndex={0}
+    <div
+      className={HtmlElementId.snComponent}
+      id={HtmlElementId.snComponent}
+      tabIndex={0}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          let newNote = insertRecord(
+            note,
+            nextProject,
+            OffsetDateTime.now(ZoneId.UTC)
+          );
+          setNextProject('');
+          saveNote(newNote);
+        }}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            let newNote = insertRecord(
-              note,
-              nextProject,
-              OffsetDateTime.now(ZoneId.UTC)
-            );
-            setNextProject('');
-            saveNote(newNote);
-          }}
-        >
-          <SimpleGrid columns={2}>
-            <Input
-              height="100%"
-              placeholder={'What are you working on?'}
-              value={nextProject}
-              onChange={(event) => setNextProject(event.target.value)}
-            />
-            <Button
-              width="100%"
-              padding="2rem"
-              type="submit"
-              disabled={!nextProject}
-            >
-              Start timer
-            </Button>
-          </SimpleGrid>
-        </form>
-        <TableContainer>
-          <Table size="lg">
-            <Thead>
-              <Tr>
-                <Th>Project</Th>
-                <Th>Duration</Th>
-                <Th>Action</Th>
+        <SimpleGrid columns={2}>
+          <Input
+            height="100%"
+            placeholder={'What are you working on?'}
+            value={nextProject}
+            onChange={(event) => setNextProject(event.target.value)}
+          />
+          <Button
+            width="100%"
+            padding="2rem"
+            type="submit"
+            disabled={!nextProject}
+          >
+            Start timer
+          </Button>
+        </SimpleGrid>
+      </form>
+      <TableContainer>
+        <Table size="lg">
+          <Thead>
+            <Tr>
+              <Th>Project</Th>
+              <Th>Duration</Th>
+              <Th>Action</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {projects.length > 0 && (
+              <Tr
+                key={'total'}
+                borderBottom={'2px solid rgba(128, 128, 128, 0.2)'}
+              >
+                <Td>Total</Td>
+                <Td>
+                  <FixedDuration duration={sumAllProjects} />
+                </Td>
+                <Td></Td>
               </Tr>
-            </Thead>
-            <Tbody>
-              {projects.length > 0 && (
-                <Tr
-                  key={'total'}
-                  borderBottom={'2px solid rgba(128, 128, 128, 0.2)'}
-                >
-                  <Td>Total</Td>
-                  <Td>
-                    <FixedDuration duration={sumAllProjects} />
-                  </Td>
-                  <Td></Td>
-                </Tr>
-              )}
-              {activeRecord && (
-                <Tr
-                  key="active"
-                  backgroundColor="green.50"
-                  borderBottom={'3px solid rgba(128, 128, 128, 0.2)'}
-                >
-                  <Td>{activeRecord.project}</Td>
-                  <Td>
-                    <DynamicDuration start={activeRecord.start} />
-                  </Td>
-                  <Td>
-                    <Button
-                      width="100%"
-                      onClick={() => {
-                        let newNote = stopCurrentRecord(
-                          note,
-                          OffsetDateTime.now(ZoneId.UTC)
-                        );
-                        saveNote(newNote);
-                      }}
-                    >
-                      Stop timer
-                    </Button>
-                  </Td>
-                </Tr>
-              )}
-              {projects.map((project) => (
-                <Tr key={project.name}>
-                  <Td>{project.name}</Td>
-                  <Td>
-                    <FixedDuration duration={project.totalTime} />
-                  </Td>
-                  <Td>
-                    <Button
-                      width="100%"
-                      disabled={!!activeRecord}
-                      onClick={() => {
-                        let newNote = insertRecord(
-                          note,
-                          project.name,
-                          OffsetDateTime.now(ZoneId.UTC)
-                        );
-                        saveNote(newNote);
-                      }}
-                    >
-                      Start timer
-                    </Button>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </div>
-    </>
+            )}
+            {activeRecord && (
+              <Tr
+                key="active"
+                backgroundColor="green.50"
+                borderBottom={'3px solid rgba(128, 128, 128, 0.2)'}
+              >
+                <Td>{activeRecord.project}</Td>
+                <Td>
+                  <DynamicDuration start={activeRecord.start} />
+                </Td>
+                <Td>
+                  <Button
+                    width="100%"
+                    onClick={() => {
+                      let newNote = stopCurrentRecord(
+                        note,
+                        OffsetDateTime.now(ZoneId.UTC)
+                      );
+                      saveNote(newNote);
+                    }}
+                  >
+                    Stop timer
+                  </Button>
+                </Td>
+              </Tr>
+            )}
+            {projects.map((project) => (
+              <Tr key={project.name}>
+                <Td>{project.name}</Td>
+                <Td>
+                  <FixedDuration duration={project.totalTime} />
+                </Td>
+                <Td>
+                  <Button
+                    width="100%"
+                    disabled={!!activeRecord}
+                    onClick={() => {
+                      let newNote = insertRecord(
+                        note,
+                        project.name,
+                        OffsetDateTime.now(ZoneId.UTC)
+                      );
+                      saveNote(newNote);
+                    }}
+                  >
+                    Start timer
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
 
