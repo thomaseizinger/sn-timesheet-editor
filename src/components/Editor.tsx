@@ -10,18 +10,11 @@ import {
   Th,
   Thead,
   Tr,
-  useInterval,
 } from '@chakra-ui/react';
-import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
-import {
-  ChronoField,
-  DateTimeFormatterBuilder,
-  Duration,
-  Instant,
-  OffsetDateTime,
-  ZoneId,
-} from '@js-joda/core';
+import { insertRecord, parseRecords } from '../note';
+import { Duration, OffsetDateTime, ZoneId } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
+import { parseProjects } from '../project';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
@@ -37,6 +30,7 @@ export default function Editor({ note, saveNote }: Props) {
   const [nextProject, setNextProject] = useState('');
 
   let records = parseRecords(note);
+  let projects = parseProjects(records);
 
   return (
     <>
@@ -79,42 +73,15 @@ export default function Editor({ note, saveNote }: Props) {
             <Thead>
               <Tr>
                 <Th>Project</Th>
-                <Th>Start</Th>
-                <Th>End</Th>
                 <Th>Duration</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {records.map((record) => (
-                <Tr key={record.id}>
-                  <Td>{record.project}</Td>
+              {projects.map((project) => (
+                <Tr key={project.name}>
+                  <Td>{project.name}</Td>
                   <Td>
-                    <FormattedDatetime timestamp={record.start} />
-                  </Td>
-                  <Td>
-                    {record.end ? (
-                      <FormattedDatetime timestamp={record.end} />
-                    ) : (
-                      <Button
-                        width="100%"
-                        onClick={() => {
-                          let newNote = stopCurrentRecord(
-                            note,
-                            OffsetDateTime.now(ZoneId.UTC)
-                          );
-                          saveNote(newNote);
-                        }}
-                      >
-                        Stop timer
-                      </Button>
-                    )}
-                  </Td>
-                  <Td>
-                    {record.end ? (
-                      <FixedDuration start={record.start} end={record.end} />
-                    ) : (
-                      <DynamicDuration start={record.start} />
-                    )}
+                    <FixedDuration duration={project.totalTime} />
                   </Td>
                 </Tr>
               ))}
@@ -126,57 +93,10 @@ export default function Editor({ note, saveNote }: Props) {
   );
 }
 
-interface FormattedDateTimeProps {
-  timestamp: OffsetDateTime;
-}
-
-function FormattedDatetime({ timestamp }: FormattedDateTimeProps) {
-  const formatted = timestamp
-    .atZoneSameInstant(ZoneId.systemDefault())
-    .format(
-      new DateTimeFormatterBuilder()
-        .appendValue(ChronoField.YEAR)
-        .appendLiteral('-')
-        .appendValue(ChronoField.MONTH_OF_YEAR, 2)
-        .appendLiteral('-')
-        .appendValue(ChronoField.DAY_OF_MONTH, 2)
-        .appendLiteral(' ')
-        .appendValue(ChronoField.HOUR_OF_DAY, 2)
-        .appendLiteral(':')
-        .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-        .appendLiteral(':')
-        .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
-        .toFormatter()
-    );
-
-  return <span>{formatted}</span>;
-}
-
 interface FixedDurationProps {
-  start: OffsetDateTime;
-  end: OffsetDateTime;
+  duration: Duration;
 }
 
-function FixedDuration({ start, end }: FixedDurationProps) {
-  return (
-    <span>{formatSeconds(Duration.between(start, end).toMillis() / 1000)}</span>
-  );
-}
-
-interface DynamicDurationProps {
-  start: OffsetDateTime;
-}
-
-function DynamicDuration({ start }: DynamicDurationProps) {
-  let [end, setEnd] = useState(Instant.now());
-  useInterval(() => {
-    setEnd(Instant.now());
-  }, 1000);
-
-  return (
-    <FixedDuration
-      start={start}
-      end={OffsetDateTime.ofInstant(end, ZoneId.UTC)}
-    />
-  );
+function FixedDuration({ duration }: FixedDurationProps) {
+  return <span>{formatSeconds(duration.toMillis() / 1000)}</span>;
 }
