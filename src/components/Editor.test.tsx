@@ -9,11 +9,10 @@ test('UI renders table headers', () => {
     screen.getByRole('columnheader', { name: 'Project' })
   ).toBeInTheDocument();
   expect(
-    screen.getByRole('columnheader', { name: 'Start' })
-  ).toBeInTheDocument();
-  expect(screen.getByRole('columnheader', { name: 'End' })).toBeInTheDocument();
-  expect(
     screen.getByRole('columnheader', { name: 'Duration' })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole('columnheader', { name: 'Action' })
   ).toBeInTheDocument();
 });
 

@@ -32,6 +32,10 @@ export default function Editor({ note, saveNote }: Props) {
 
   let [completedRecords, activeRecord] = parseRecords(note);
   let projects = parseProjects(completedRecords);
+  let sumAllProjects = projects.reduce(
+    (sum, project) => sum.plus(project.totalTime),
+    Duration.ZERO
+  );
 
   return (
     <>
@@ -70,7 +74,7 @@ export default function Editor({ note, saveNote }: Props) {
           </SimpleGrid>
         </form>
         <TableContainer>
-          <Table variant="simple" size="lg">
+          <Table size="lg">
             <Thead>
               <Tr>
                 <Th>Project</Th>
@@ -79,8 +83,24 @@ export default function Editor({ note, saveNote }: Props) {
               </Tr>
             </Thead>
             <Tbody>
+              {projects.length > 0 && (
+                <Tr
+                  key={'total'}
+                  borderBottom={'2px solid rgba(128, 128, 128, 0.2)'}
+                >
+                  <Td>Total</Td>
+                  <Td>
+                    <FixedDuration duration={sumAllProjects} />
+                  </Td>
+                  <Td></Td>
+                </Tr>
+              )}
               {activeRecord && (
-                <Tr key="active" backgroundColor="green.50">
+                <Tr
+                  key="active"
+                  backgroundColor="green.50"
+                  borderBottom={'3px solid rgba(128, 128, 128, 0.2)'}
+                >
                   <Td>{activeRecord.project}</Td>
                   <Td>
                     <DynamicDuration start={activeRecord.start} />
@@ -146,17 +166,16 @@ interface DynamicDurationProps {
 }
 
 function DynamicDuration({ start }: DynamicDurationProps) {
+  const duration = useDynamicDuration(start);
+
+  return <FixedDuration duration={duration} />;
+}
+
+function useDynamicDuration(start: OffsetDateTime) {
   let [end, setEnd] = useState(Instant.now());
   useInterval(() => {
     setEnd(Instant.now());
   }, 1000);
 
-  return (
-    <FixedDuration
-      duration={Duration.between(
-        start,
-        OffsetDateTime.ofInstant(end, ZoneId.UTC)
-      )}
-    />
-  );
+  return Duration.between(start, OffsetDateTime.ofInstant(end, ZoneId.UTC));
 }
