@@ -6,7 +6,7 @@ This repository contains an editor for maintaining a simple timesheet in CSV for
 
 ## UI
 
-![image](https://user-images.githubusercontent.com/5486389/177994989-8f16fb42-b41d-458f-a5fd-8e3d215b848d.png)
+![Screenshot from 2022-10-08 17-40-44](https://user-images.githubusercontent.com/5486389/194693791-c51953ef-979a-44dd-bd9a-4430a1f757cc.png)
 
 ## Installation
 
@@ -14,8 +14,11 @@ Install as a custom editor from this URL: https://eizinger.io/sn-timesheet-edito
 
 ## Features
 
-The editor only supports adding new entries.
-To delete or edit an existing entry, please switch to plain text mode and make the required changes yourself.
+- The currently running record is highlighted in green.
+- Each project has a separate "Start timer" button to resume work on it.
+- The total of duration is displayed in the note preview.
+
+To delete or edit an something, please switch to plain text mode.
 
 ## Usage considerations
 
