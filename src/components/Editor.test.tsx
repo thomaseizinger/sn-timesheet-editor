@@ -43,5 +43,7 @@ test('UI renders stop button after clicking', () => {
 function LocalStateEditor() {
   let [note, saveNote] = useState('');
 
-  return <Editor note={note} saveNote={saveNote} />;
+  return (
+    <Editor note={note} saveNote={saveNote} setPreview={() => undefined} />
+  );
 }

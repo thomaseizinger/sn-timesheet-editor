@@ -27,9 +27,10 @@ export enum HtmlElementId {
 interface Props {
   note: string;
   saveNote: (newNote: string) => void;
+  setPreview: (newPreview: string) => void;
 }
 
-export default function Editor({ note, saveNote }: Props) {
+export default function Editor({ note, saveNote, setPreview }: Props) {
   const [nextProject, setNextProject] = useState('');
 
   let [completedRecords, activeRecord] = parseRecords(note);
@@ -38,6 +39,7 @@ export default function Editor({ note, saveNote }: Props) {
     (sum, project) => sum.plus(project.totalTime),
     Duration.ZERO
   );
+  setPreview(`Total: ${formatSeconds(sumAllProjects.toMillis() / 1000)}`);
 
   return (
     <div
@@ -140,15 +142,6 @@ export default function Editor({ note, saveNote }: Props) {
           </Tbody>
         </Table>
       </TableContainer>
-      {projects.length > 0 && (
-        <Box
-          padding={'var(--chakra-space-5) var(--chakra-space-8)'}
-          textAlign={'right'}
-        >
-          Total:&nbsp;
-          <FixedDuration duration={sumAllProjects} />
-        </Box>
-      )}
     </div>
   );
 }
