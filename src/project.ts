@@ -1,4 +1,4 @@
-import { Record } from './note';
+import { CompletedRecord } from './note';
 import { Duration } from '@js-joda/core';
 
 /// Consolidated data of all records for a single project.
@@ -9,15 +9,11 @@ export interface Project {
   totalTime: Duration;
 }
 
-export function parseProjects(records: Record[]): Project[] {
+export function parseProjects(records: CompletedRecord[]): Project[] {
   const projects: Project[] = [];
 
   records
     .reduce((projects, record) => {
-      if (!record.end) {
-        return projects;
-      }
-
       const newDuration = Duration.between(record.start, record.end);
       const existingDuration = projects.get(record.project) ?? Duration.ZERO;
 

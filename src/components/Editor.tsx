@@ -11,10 +11,11 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { insertRecord, parseRecords } from '../note';
-import { Duration, OffsetDateTime, ZoneId } from '@js-joda/core';
+import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
+import { Duration, Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
 import { parseProjects } from '../project';
+import { useInterval } from 'usehooks-ts';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
@@ -29,8 +30,8 @@ interface Props {
 export default function Editor({ note, saveNote }: Props) {
   const [nextProject, setNextProject] = useState('');
 
-  let records = parseRecords(note);
-  let projects = parseProjects(records);
+  let [completedRecords, activeRecord] = parseRecords(note);
+  let projects = parseProjects(completedRecords);
 
   return (
     <>
@@ -74,14 +75,53 @@ export default function Editor({ note, saveNote }: Props) {
               <Tr>
                 <Th>Project</Th>
                 <Th>Duration</Th>
+                <Th>Action</Th>
               </Tr>
             </Thead>
             <Tbody>
+              {activeRecord && (
+                <Tr key="active" backgroundColor="green.50">
+                  <Td>{activeRecord.project}</Td>
+                  <Td>
+                    <DynamicDuration start={activeRecord.start} />
+                  </Td>
+                  <Td>
+                    <Button
+                      width="100%"
+                      onClick={() => {
+                        let newNote = stopCurrentRecord(
+                          note,
+                          OffsetDateTime.now(ZoneId.UTC)
+                        );
+                        saveNote(newNote);
+                      }}
+                    >
+                      Stop timer
+                    </Button>
+                  </Td>
+                </Tr>
+              )}
               {projects.map((project) => (
                 <Tr key={project.name}>
                   <Td>{project.name}</Td>
                   <Td>
                     <FixedDuration duration={project.totalTime} />
+                  </Td>
+                  <Td>
+                    <Button
+                      width="100%"
+                      disabled={!!activeRecord}
+                      onClick={() => {
+                        let newNote = insertRecord(
+                          note,
+                          project.name,
+                          OffsetDateTime.now(ZoneId.UTC)
+                        );
+                        saveNote(newNote);
+                      }}
+                    >
+                      Start timer
+                    </Button>
                   </Td>
                 </Tr>
               ))}
@@ -99,4 +139,24 @@ interface FixedDurationProps {
 
 function FixedDuration({ duration }: FixedDurationProps) {
   return <span>{formatSeconds(duration.toMillis() / 1000)}</span>;
+}
+
+interface DynamicDurationProps {
+  start: OffsetDateTime;
+}
+
+function DynamicDuration({ start }: DynamicDurationProps) {
+  let [end, setEnd] = useState(Instant.now());
+  useInterval(() => {
+    setEnd(Instant.now());
+  }, 1000);
+
+  return (
+    <FixedDuration
+      duration={Duration.between(
+        start,
+        OffsetDateTime.ofInstant(end, ZoneId.UTC)
+      )}
+    />
+  );
 }

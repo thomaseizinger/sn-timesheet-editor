@@ -1,9 +1,9 @@
-import { Record } from './note';
+import { CompletedRecord } from './note';
 import { Duration, OffsetDateTime, ZoneOffset } from '@js-joda/core';
 import { parseProjects } from './project';
 
 test('should sum time records of projects', () => {
-  let timeRecords: Record[] = [
+  let timeRecords: CompletedRecord[] = [
     {
       id: 1,
       project: 'foo',
@@ -39,7 +39,7 @@ test('should sum time records of projects', () => {
 });
 
 test('should ignore records without end time', () => {
-  let timeRecords: Record[] = [
+  let timeRecords: CompletedRecord[] = [
     {
       id: 1,
       project: 'foo',
@@ -51,11 +51,6 @@ test('should ignore records without end time', () => {
       project: 'bar',
       start: aTimestamp(2),
       end: aTimestamp(4),
-    },
-    {
-      id: 3,
-      project: 'foo',
-      start: aTimestamp(4),
     },
   ];
 
@@ -74,7 +69,7 @@ test('should ignore records without end time', () => {
 });
 
 test('should sort records based on duration', () => {
-  let timeRecords: Record[] = [
+  let timeRecords: CompletedRecord[] = [
     {
       id: 1,
       project: 'foo',
