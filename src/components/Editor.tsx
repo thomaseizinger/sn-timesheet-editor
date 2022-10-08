@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import {
+  Box,
   Button,
+  Divider,
   Input,
   SimpleGrid,
   Table,
@@ -43,35 +45,42 @@ export default function Editor({ note, saveNote }: Props) {
       id={HtmlElementId.snComponent}
       tabIndex={0}
     >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          let newNote = insertRecord(
-            note,
-            nextProject,
-            OffsetDateTime.now(ZoneId.UTC)
-          );
-          setNextProject('');
-          saveNote(newNote);
-        }}
+      <Box
+        borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
+        paddingTop={'1px'}
       >
-        <SimpleGrid columns={2}>
-          <Input
-            height="100%"
-            placeholder={'What are you working on?'}
-            value={nextProject}
-            onChange={(event) => setNextProject(event.target.value)}
-          />
-          <Button
-            width="100%"
-            padding="2rem"
-            type="submit"
-            disabled={!nextProject}
-          >
-            Start timer
-          </Button>
-        </SimpleGrid>
-      </form>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            let newNote = insertRecord(
+              note,
+              nextProject,
+              OffsetDateTime.now(ZoneId.UTC)
+            );
+            setNextProject('');
+            saveNote(newNote);
+          }}
+        >
+          <SimpleGrid columns={2}>
+            <Input
+              height="100%"
+              placeholder={'What are you working on?'}
+              value={nextProject}
+              border={'0px'}
+              borderRadius={0}
+              onChange={(event) => setNextProject(event.target.value)}
+            />
+            <Button
+              padding="2rem"
+              type="submit"
+              borderRadius={0}
+              disabled={!nextProject}
+            >
+              Start timer
+            </Button>
+          </SimpleGrid>
+        </form>
+      </Box>
       <TableContainer>
         <Table size="lg">
           <Thead>
@@ -82,24 +91,8 @@ export default function Editor({ note, saveNote }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {projects.length > 0 && (
-              <Tr
-                key={'total'}
-                borderBottom={'2px solid rgba(128, 128, 128, 0.2)'}
-              >
-                <Td>Total</Td>
-                <Td>
-                  <FixedDuration duration={sumAllProjects} />
-                </Td>
-                <Td></Td>
-              </Tr>
-            )}
             {activeRecord && (
-              <Tr
-                key="active"
-                backgroundColor="green.50"
-                borderBottom={'3px solid rgba(128, 128, 128, 0.2)'}
-              >
+              <Tr key="active" backgroundColor="green.50">
                 <Td>{activeRecord.project}</Td>
                 <Td>
                   <DynamicDuration start={activeRecord.start} />
@@ -147,6 +140,15 @@ export default function Editor({ note, saveNote }: Props) {
           </Tbody>
         </Table>
       </TableContainer>
+      {projects.length > 0 && (
+        <Box
+          padding={'var(--chakra-space-5) var(--chakra-space-8)'}
+          textAlign={'right'}
+        >
+          Total:&nbsp;
+          <FixedDuration duration={sumAllProjects} />
+        </Box>
+      )}
     </div>
   );
 }
