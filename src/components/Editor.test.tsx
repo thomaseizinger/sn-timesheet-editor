@@ -9,7 +9,7 @@ test('UI renders table headers', () => {
     screen.getByRole('columnheader', { name: 'Project' })
   ).toBeInTheDocument();
   expect(
-    screen.getByRole('columnheader', { name: 'Duration' })
+    screen.getByRole('columnheader', { name: 'Time' })
   ).toBeInTheDocument();
   expect(
     screen.getByRole('columnheader', { name: 'Action' })
@@ -35,7 +35,7 @@ test('UI renders stop button after clicking', () => {
   });
   fireEvent.click(startButton);
 
-  let stopButton = screen.getByRole('button', { name: 'Stop timer' });
+  let stopButton = screen.getByRole('button', { name: 'Stop' });
 
   expect(stopButton).toBeInTheDocument();
 });

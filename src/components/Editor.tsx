@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
+  HStack,
   Input,
   SimpleGrid,
   Table,
@@ -12,7 +13,14 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { insertRecord, parseRecords, stopCurrentRecord } from '../note';
+import {
+  ActiveRecord,
+  changeStartOfCurrentRecord,
+  insertRecord,
+  isBeforeEndOfLastCompleted,
+  parseRecords,
+  stopCurrentRecord,
+} from '../note';
 import { Duration, Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
 import { parseProjects } from '../project';
@@ -87,38 +95,23 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
           <Thead>
             <Tr>
               <Th>Project</Th>
-              <Th>Duration</Th>
+              <Th>Time</Th>
               <Th>Action</Th>
             </Tr>
           </Thead>
           <Tbody>
             {activeRecord && (
-              <Tr key="active" backgroundColor="green.50">
-                <Td>{activeRecord.project}</Td>
-                <Td>
-                  <DynamicDuration start={activeRecord.start} />
-                </Td>
-                <Td>
-                  <Button
-                    width="100%"
-                    onClick={() => {
-                      let newNote = stopCurrentRecord(
-                        note,
-                        OffsetDateTime.now(ZoneId.UTC)
-                      );
-                      saveNote(newNote);
-                    }}
-                  >
-                    Stop timer
-                  </Button>
-                </Td>
-              </Tr>
+              <ActiveRecordRow
+                activeRecord={activeRecord}
+                note={note}
+                saveNote={saveNote}
+              />
             )}
             {projects.map((project) => (
               <Tr key={project.name}>
                 <Td>{project.name}</Td>
                 <Td>
-                  <FixedDuration duration={project.totalTime} />
+                  <FormattedDuration duration={project.totalTime} />
                 </Td>
                 <Td>
                   <Button
@@ -149,18 +142,65 @@ interface FixedDurationProps {
   duration: Duration;
 }
 
-function FixedDuration({ duration }: FixedDurationProps) {
+function FormattedDuration({ duration }: FixedDurationProps) {
   return <span>{formatSeconds(duration.toMillis() / 1000)}</span>;
 }
 
-interface DynamicDurationProps {
-  start: OffsetDateTime;
+interface ActiveRecordProps {
+  activeRecord: ActiveRecord;
+  note: string;
+  saveNote: (newNote: string) => void;
 }
 
-function DynamicDuration({ start }: DynamicDurationProps) {
-  const duration = useDynamicDuration(start);
+function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
+  const duration = useDynamicDuration(activeRecord.start);
+  const isLessThanOneMinute = duration.compareTo(Duration.ofMinutes(1)) < 0;
 
-  return <FixedDuration duration={duration} />;
+  const startMinus1m = activeRecord.start.minus(Duration.ofMinutes(1));
+  const startPlus1m = activeRecord.start.plus(Duration.ofMinutes(1));
+
+  return (
+    <Tr key="active" backgroundColor="green.50">
+      <Td>{activeRecord.project}</Td>
+      <Td>
+        <FormattedDuration duration={duration} />
+      </Td>
+      <Td>
+        <HStack gap={'1'}>
+          <Button
+            disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
+            onClick={() => {
+              let newNote = changeStartOfCurrentRecord(note, startMinus1m);
+              saveNote(newNote);
+            }}
+          >
+            +1m
+          </Button>
+          <Button
+            flexGrow={1}
+            onClick={() => {
+              let newNote = stopCurrentRecord(
+                note,
+                OffsetDateTime.now(ZoneId.UTC)
+              );
+              saveNote(newNote);
+            }}
+          >
+            Stop
+          </Button>
+          <Button
+            disabled={isLessThanOneMinute}
+            onClick={() => {
+              let newNote = changeStartOfCurrentRecord(note, startPlus1m);
+              saveNote(newNote);
+            }}
+          >
+            -1m
+          </Button>
+        </HStack>
+      </Td>
+    </Tr>
+  );
 }
 
 function useDynamicDuration(start: OffsetDateTime) {
