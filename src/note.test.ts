@@ -1,4 +1,9 @@
-import { insertRecord, parseRecords, stopCurrentRecord } from './note';
+import {
+  insertRecord,
+  parseRecords,
+  changeStartOfCurrentRecord,
+  stopCurrentRecord,
+} from './note';
 import { Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 
 test('can parse a record', () => {
@@ -65,4 +70,31 @@ test('can stop current record', () => {
     `2,xtra,2022-06-24T18:38:31Z,2022-06-24T19:45:11Z
 1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
   );
+});
+
+test('can change start of current record', () => {
+  let records = `2,xtra,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`;
+
+  let newRecords = changeStartOfCurrentRecord(
+    records,
+    OffsetDateTime.ofInstant(Instant.ofEpochMilli(1656099911000), ZoneId.UTC)
+  );
+
+  expect(newRecords).toStrictEqual(
+    `2,xtra,2022-06-24T19:45:11Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
+  );
+});
+
+test('refuses to change start of current record to before end of previous one', () => {
+  let records = `2,xtra,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`; // ends at Instant.ofEpochMilli(1656095745000)
+
+  expect(() => {
+    changeStartOfCurrentRecord(
+      records,
+      OffsetDateTime.ofInstant(Instant.ofEpochMilli(1656095744000), ZoneId.UTC)
+    );
+  }).toThrow('');
 });

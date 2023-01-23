@@ -27,10 +27,10 @@ export function parseRecords(
   for (const line of note.split('\n')) {
     try {
       let record = parseRecord(line);
-      if (!('end' in record)) {
-        activeRecord = record;
-      } else {
+      if (isCompletedRecord(record)) {
         completedRecords.push(record);
+      } else {
+        activeRecord = record;
       }
     } catch (e) {}
   }
@@ -71,6 +71,41 @@ export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   return [newFirst].concat(...remaining).join('\n');
 }
 
+export function changeStartOfCurrentRecord(
+  note: string,
+  start: OffsetDateTime
+): string {
+  let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
+
+  if (isBeforeEndOfLastCompleted(note, start)) {
+    throw new Error('Cannot predate record to before end of last record');
+  }
+
+  let newFirst = printActiveRecord({
+    ...parseRecord(first),
+    start,
+  });
+
+  return [newFirst].concat(...remaining).join('\n');
+}
+
+export function isBeforeEndOfLastCompleted(
+  note: string,
+  start: OffsetDateTime
+) {
+  let maybeLastCompleted = note.split('\n')[1];
+
+  if (maybeLastCompleted != null && maybeLastCompleted !== '') {
+    let previousRecord = parseRecord(maybeLastCompleted);
+
+    if (isCompletedRecord(previousRecord)) {
+      return start.isBefore(previousRecord.end);
+    }
+  }
+
+  return false;
+}
+
 function parseRecord(line: string): CompletedRecord | ActiveRecord {
   let [id, project, start, end] = line.split(',');
 
@@ -94,6 +129,12 @@ function parseRecord(line: string): CompletedRecord | ActiveRecord {
       end: OffsetDateTime.parse(end, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
     };
   }
+}
+
+function isCompletedRecord(
+  record: ActiveRecord | CompletedRecord
+): record is CompletedRecord {
+  return 'end' in record;
 }
 
 function printActiveRecord(record: ActiveRecord): string {
