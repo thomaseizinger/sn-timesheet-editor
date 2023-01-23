@@ -9,13 +9,6 @@ import {
   HStack,
   Input,
   SimpleGrid,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
 } from '@chakra-ui/react';
 import {
   ActiveRecord,
