@@ -155,6 +155,7 @@ interface HeadingProps {
 function Heading({ text, ...other }: HeadingProps & GridItemProps) {
   return (
     <GridItem
+      role={'columnheader'}
       textTransform={'uppercase'}
       fontSize={'sm'}
       textColor={'gray.500'}
