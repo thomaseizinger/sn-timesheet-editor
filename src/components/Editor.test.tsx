@@ -9,7 +9,7 @@ test('UI renders table headers', () => {
     screen.getByRole('columnheader', { name: 'Project' })
   ).toBeInTheDocument();
   expect(
-    screen.getByRole('columnheader', { name: 'Time' })
+    screen.getByRole('columnheader', { name: 'Duration' })
   ).toBeInTheDocument();
   expect(
     screen.getByRole('columnheader', { name: 'Action' })
@@ -19,7 +19,7 @@ test('UI renders table headers', () => {
 test('UI renders start but not stop button', () => {
   render(<LocalStateEditor />);
 
-  let startButton = screen.getByRole('button', { name: 'Start timer' });
+  let startButton = screen.getByRole('button', { name: 'Start' });
 
   expect(startButton).toBeInTheDocument();
 });
@@ -27,7 +27,7 @@ test('UI renders start but not stop button', () => {
 test('UI renders stop button after clicking', () => {
   render(<LocalStateEditor />);
 
-  let startButton = screen.getByRole('button', { name: 'Start timer' });
+  let startButton = screen.getByRole('button', { name: 'Start' });
   let projectInput = screen.getByRole('textbox'); // TODO: Add name here
 
   fireEvent.change(projectInput, {

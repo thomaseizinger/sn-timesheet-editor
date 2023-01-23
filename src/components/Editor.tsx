@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import {
   Box,
+  BoxProps,
   Button,
+  Grid,
+  GridItem,
+  GridItemProps,
   HStack,
   Input,
   SimpleGrid,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
 } from '@chakra-ui/react';
 import {
   ActiveRecord,
@@ -83,58 +80,107 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
               padding="2rem"
               type="submit"
               borderRadius={0}
-              disabled={!nextProject}
+              disabled={!nextProject || !!activeRecord}
             >
-              Start timer
+              Start
             </Button>
           </SimpleGrid>
         </form>
       </Box>
-      <TableContainer>
-        <Table size="lg">
-          <Thead>
-            <Tr>
-              <Th>Project</Th>
-              <Th>Time</Th>
-              <Th>Action</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {activeRecord && (
-              <ActiveRecordRow
-                activeRecord={activeRecord}
-                note={note}
-                saveNote={saveNote}
-              />
-            )}
-            {projects.map((project) => (
-              <Tr key={project.name}>
-                <Td>{project.name}</Td>
-                <Td>
-                  <FormattedDuration duration={project.totalTime} />
-                </Td>
-                <Td>
-                  <Button
-                    width="100%"
-                    disabled={!!activeRecord}
-                    onClick={() => {
-                      let newNote = insertRecord(
-                        note,
-                        project.name,
-                        OffsetDateTime.now(ZoneId.UTC)
-                      );
-                      saveNote(newNote);
-                    }}
-                  >
-                    Start timer
-                  </Button>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+      <Grid
+        templateRows={'auto 1fr'}
+        templateColumns={'2fr minmax(50px, auto) 1fr'}
+        columnGap={5}
+        rowGap={5}
+        alignItems={'center'}
+      >
+        <GridItem colSpan={3} />
+
+        <Heading text={'Project'} paddingLeft={5} />
+        <Heading text={'Duration'} />
+        <Heading text={'Action'} paddingRight={5} />
+
+        <GridItem
+          colSpan={3}
+          borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
+        />
+
+        {activeRecord && (
+          <ActiveRecordRow
+            activeRecord={activeRecord}
+            note={note}
+            saveNote={saveNote}
+          />
+        )}
+        {projects.map((project) => (
+          <>
+            <ProjectName
+              key={`project-${project.name}`}
+              name={project.name}
+              paddingLeft={5}
+            />
+            <FormattedDuration
+              key={`duration-${project.name}`}
+              duration={project.totalTime}
+            />
+            <GridItem paddingRight={5}>
+              <Button
+                key={`actions-${project.name}`}
+                width="100%"
+                disabled={!!activeRecord}
+                fontSize={'xl'}
+                onClick={() => {
+                  let newNote = insertRecord(
+                    note,
+                    project.name,
+                    OffsetDateTime.now(ZoneId.UTC)
+                  );
+                  saveNote(newNote);
+                }}
+              >
+                Start
+              </Button>
+            </GridItem>
+          </>
+        ))}
+      </Grid>
     </div>
+  );
+}
+
+interface HeadingProps {
+  text: string;
+}
+
+function Heading({ text, ...other }: HeadingProps & GridItemProps) {
+  return (
+    <GridItem
+      role={'columnheader'}
+      textTransform={'uppercase'}
+      fontSize={'sm'}
+      textColor={'gray.500'}
+      fontWeight={'bold'}
+      {...other}
+    >
+      {text}
+    </GridItem>
+  );
+}
+
+interface ProjectNameProps {
+  name: string;
+}
+
+function ProjectName({ name, ...other }: ProjectNameProps & BoxProps) {
+  return (
+    <Box
+      textOverflow={'ellipsis'}
+      overflow={'hidden'}
+      whiteSpace={'nowrap'}
+      {...other}
+    >
+      {name}
+    </Box>
   );
 }
 
@@ -142,8 +188,11 @@ interface FixedDurationProps {
   duration: Duration;
 }
 
-function FormattedDuration({ duration }: FixedDurationProps) {
-  return <span>{formatSeconds(duration.toMillis() / 1000)}</span>;
+function FormattedDuration({
+  duration,
+  ...other
+}: FixedDurationProps & BoxProps) {
+  return <Box {...other}>{formatSeconds(duration.toMillis() / 1000)}</Box>;
 }
 
 interface ActiveRecordProps {
@@ -160,46 +209,50 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
   const startPlus1m = activeRecord.start.plus(Duration.ofMinutes(1));
 
   return (
-    <Tr key="active" backgroundColor="green.50">
-      <Td>{activeRecord.project}</Td>
-      <Td>
-        <FormattedDuration duration={duration} />
-      </Td>
-      <Td>
-        <HStack gap={'1'}>
-          <Button
-            disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
-            onClick={() => {
-              let newNote = changeStartOfCurrentRecord(note, startMinus1m);
-              saveNote(newNote);
-            }}
-          >
-            +1m
-          </Button>
-          <Button
-            flexGrow={1}
-            onClick={() => {
-              let newNote = stopCurrentRecord(
-                note,
-                OffsetDateTime.now(ZoneId.UTC)
-              );
-              saveNote(newNote);
-            }}
-          >
-            Stop
-          </Button>
-          <Button
-            disabled={isLessThanOneMinute}
-            onClick={() => {
-              let newNote = changeStartOfCurrentRecord(note, startPlus1m);
-              saveNote(newNote);
-            }}
-          >
-            -1m
-          </Button>
-        </HStack>
-      </Td>
-    </Tr>
+    <>
+      <ProjectName
+        key={'activeProject'}
+        name={activeRecord.project}
+        paddingLeft={5}
+      />
+      <FormattedDuration key={'activeDuration'} duration={duration} />
+      <HStack key={'activeActions'} gap={'1'} paddingRight={5}>
+        <Button
+          key={'plus1mButton'}
+          disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
+          onClick={() => {
+            let newNote = changeStartOfCurrentRecord(note, startMinus1m);
+            saveNote(newNote);
+          }}
+        >
+          +1m
+        </Button>
+        <Button
+          key={'stopButton'}
+          flexGrow={1}
+          fontSize={'xl'}
+          onClick={() => {
+            let newNote = stopCurrentRecord(
+              note,
+              OffsetDateTime.now(ZoneId.UTC)
+            );
+            saveNote(newNote);
+          }}
+        >
+          Stop
+        </Button>
+        <Button
+          key={'minus1mButton'}
+          disabled={isLessThanOneMinute}
+          onClick={() => {
+            let newNote = changeStartOfCurrentRecord(note, startPlus1m);
+            saveNote(newNote);
+          }}
+        >
+          -1m
+        </Button>
+      </HStack>
+    </>
   );
 }
 
