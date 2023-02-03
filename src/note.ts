@@ -71,6 +71,34 @@ export function stopCurrentRecord(note: string, end: OffsetDateTime): string {
   return [newFirst].concat(...remaining).join('\n');
 }
 
+export function renameCurrentRecord(note: string, newName: string): string {
+  let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
+
+  let record = parseRecord(first);
+
+  if (isCompletedRecord(record)) {
+    throw new Error('Cannot change completed record');
+  }
+
+  const newFirst = printActiveRecord({
+    ...record,
+    project: newName,
+  });
+
+  return [newFirst].concat(...remaining).join('\n');
+}
+export function discardCurrentRecord(note: string): string {
+  let [first, ...remaining] = note.split('\n'); // TODO: Optimise this
+
+  let record = parseRecord(first);
+
+  if (isCompletedRecord(record)) {
+    return note;
+  }
+
+  return remaining.join('\n');
+}
+
 export function changeStartOfCurrentRecord(
   note: string,
   start: OffsetDateTime
