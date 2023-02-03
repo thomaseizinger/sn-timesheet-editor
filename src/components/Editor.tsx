@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  AlertTitle,
   Box,
   BoxProps,
   Button,
@@ -87,63 +88,67 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
           </SimpleGrid>
         </form>
       </Box>
-      <Grid
-        templateRows={'auto 1fr'}
-        templateColumns={'2fr minmax(50px, auto) 1fr'}
-        columnGap={5}
-        rowGap={5}
-        alignItems={'center'}
-      >
-        <GridItem colSpan={3} />
 
-        <Heading text={'Project'} paddingLeft={5} />
-        <Heading text={'Duration'} />
-        <Heading text={'Action'} paddingRight={5} />
-
-        <GridItem
-          colSpan={3}
-          borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
+      {activeRecord && (
+        <ActiveRecordPanel
+          activeRecord={activeRecord}
+          note={note}
+          saveNote={saveNote}
         />
+      )}
 
-        {activeRecord && (
-          <ActiveRecordRow
-            activeRecord={activeRecord}
-            note={note}
-            saveNote={saveNote}
+      {!activeRecord && (
+        <Grid
+          templateRows={'auto 1fr'}
+          templateColumns={'2fr minmax(50px, auto) 1fr'}
+          columnGap={5}
+          rowGap={5}
+          alignItems={'center'}
+        >
+          <GridItem colSpan={3} />
+
+          <Heading text={'Project'} paddingLeft={5} />
+          <Heading text={'Duration'} />
+          <Heading text={'Action'} paddingRight={5} />
+
+          <GridItem
+            colSpan={3}
+            borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
           />
-        )}
-        {projects.map((project) => (
-          <>
-            <ProjectName
-              key={`project-${project.name}`}
-              name={project.name}
-              paddingLeft={5}
-            />
-            <FormattedDuration
-              key={`duration-${project.name}`}
-              duration={project.totalTime}
-            />
-            <GridItem paddingRight={5}>
-              <Button
-                key={`actions-${project.name}`}
-                width="100%"
-                disabled={!!activeRecord}
-                fontSize={'xl'}
-                onClick={() => {
-                  let newNote = insertRecord(
-                    note,
-                    project.name,
-                    OffsetDateTime.now(ZoneId.UTC)
-                  );
-                  saveNote(newNote);
-                }}
-              >
-                Start
-              </Button>
-            </GridItem>
-          </>
-        ))}
-      </Grid>
+
+          {projects.map((project) => (
+            <>
+              <ProjectName
+                key={`project-${project.name}`}
+                name={project.name}
+                paddingLeft={5}
+              />
+              <FormattedDuration
+                key={`duration-${project.name}`}
+                duration={project.totalTime}
+              />
+              <GridItem paddingRight={5}>
+                <Button
+                  key={`actions-${project.name}`}
+                  width="100%"
+                  disabled={!!activeRecord}
+                  fontSize={'xl'}
+                  onClick={() => {
+                    let newNote = insertRecord(
+                      note,
+                      project.name,
+                      OffsetDateTime.now(ZoneId.UTC)
+                    );
+                    saveNote(newNote);
+                  }}
+                >
+                  Start
+                </Button>
+              </GridItem>
+            </>
+          ))}
+        </Grid>
+      )}
     </div>
   );
 }
@@ -201,7 +206,11 @@ interface ActiveRecordProps {
   saveNote: (newNote: string) => void;
 }
 
-function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
+function ActiveRecordPanel({
+  activeRecord,
+  note,
+  saveNote,
+}: ActiveRecordProps) {
   const duration = useDynamicDuration(activeRecord.start);
   const isLessThanOneMinute = duration.compareTo(Duration.ofMinutes(1)) < 0;
 
@@ -209,24 +218,25 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
   const startPlus1m = activeRecord.start.plus(Duration.ofMinutes(1));
 
   return (
-    <>
-      <ProjectName
-        key={'activeProject'}
-        name={activeRecord.project}
-        paddingLeft={5}
-      />
-      <FormattedDuration key={'activeDuration'} duration={duration} />
-      <HStack key={'activeActions'} gap={'1'} paddingRight={5}>
-        <Button
-          key={'plus1mButton'}
-          disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
-          onClick={() => {
-            let newNote = changeStartOfCurrentRecord(note, startMinus1m);
-            saveNote(newNote);
-          }}
-        >
-          +1m
-        </Button>
+    <Grid padding={4} templateRows={'1fr 2fr 1fr'} templateColumns={'3fr 1fr'}>
+      <GridItem fontSize={'3xl'} textDecoration={'underline'}>
+        <span>Project: </span>
+        <Box display={'inline'}>{activeRecord.project}</Box>
+      </GridItem>
+      <GridItem colStart={1} alignSelf={'center'}>
+        <FormattedDuration
+          key={'activeDuration'}
+          duration={duration}
+          fontSize={'6xl'}
+        />
+      </GridItem>
+      <GridItem
+        rowStart={3}
+        colStart={2}
+        colSpan={2}
+        alignSelf={'center'}
+        justifySelf={'right'}
+      >
         <Button
           key={'stopButton'}
           flexGrow={1}
@@ -239,9 +249,25 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
             saveNote(newNote);
           }}
         >
-          Stop
+          Stop recording
         </Button>
+      </GridItem>
+      <GridItem rowStart={3} alignSelf={'center'}>
+        <span>Started at: </span>
         <Button
+          display={'inline'}
+          key={'plus1mButton'}
+          disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
+          onClick={() => {
+            let newNote = changeStartOfCurrentRecord(note, startMinus1m);
+            saveNote(newNote);
+          }}
+        >
+          &lt; 1m
+        </Button>
+        <span>{activeRecord.start.toString()}</span>
+        <Button
+          display={'inline'}
           key={'minus1mButton'}
           disabled={isLessThanOneMinute}
           onClick={() => {
@@ -249,10 +275,10 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
             saveNote(newNote);
           }}
         >
-          -1m
+          1m &gt;
         </Button>
-      </HStack>
-    </>
+      </GridItem>
+    </Grid>
   );
 }
 
