@@ -16,11 +16,13 @@ Install as a custom editor from this URL: https://eizinger.io/sn-timesheet-edito
 
 ## Features
 
-- The currently running record is highlighted in green.
+- Starting to record will switch to a different view
+- The start time can be adjusted +1/-1 minute
+- Current recording can be aborted using "Discard" button
 - Each project has a separate "Start timer" button to resume work on it.
 - The total of duration is displayed in the note preview.
 
-To delete or edit an something, please switch to plain text mode.
+To delete or edit something, please switch to plain text mode.
 
 ## Usage considerations
 
