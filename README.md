@@ -6,7 +6,9 @@ This repository contains an editor for maintaining a simple timesheet in CSV for
 
 ## UI
 
-![Screenshot from 2022-10-08 17-40-44](https://user-images.githubusercontent.com/5486389/194693791-c51953ef-979a-44dd-bd9a-4430a1f757cc.png)
+| Overview                                                                                                                                     | Recording                                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Screenshot from 2023-02-04 15-07-44](https://user-images.githubusercontent.com/5486389/216740894-cf370560-d652-49be-945d-7fa57d6f8735.png) | ![Screenshot from 2023-02-04 15-07-52](https://user-images.githubusercontent.com/5486389/216740900-db7cf9b5-d857-4772-83dd-600db1376f34.png) |
 
 ## Installation
 
