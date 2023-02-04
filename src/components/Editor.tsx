@@ -6,19 +6,24 @@ import {
   Grid,
   GridItem,
   GridItemProps,
-  HStack,
-  Input,
-  SimpleGrid,
 } from '@chakra-ui/react';
 import {
   ActiveRecord,
   changeStartOfCurrentRecord,
+  discardCurrentRecord,
   insertRecord,
   isBeforeEndOfLastCompleted,
   parseRecords,
+  renameCurrentRecord,
   stopCurrentRecord,
 } from '../note';
-import { Duration, Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
+import {
+  DateTimeFormatter,
+  Duration,
+  Instant,
+  OffsetDateTime,
+  ZoneId,
+} from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
 import { parseProjects } from '../project';
 import { useInterval } from 'usehooks-ts';
@@ -51,99 +56,99 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
       id={HtmlElementId.snComponent}
       tabIndex={0}
     >
-      <Box
-        borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
-        paddingTop={'1px'}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            let newNote = insertRecord(
-              note,
-              nextProject,
-              OffsetDateTime.now(ZoneId.UTC)
-            );
-            setNextProject('');
-            saveNote(newNote);
-          }}
-        >
-          <SimpleGrid columns={2}>
-            <Input
-              height="100%"
-              placeholder={'What are you working on?'}
-              value={nextProject}
-              border={'0px'}
-              borderRadius={0}
-              onChange={(event) => setNextProject(event.target.value)}
-            />
-            <Button
-              padding="2rem"
-              type="submit"
-              borderRadius={0}
-              disabled={!nextProject || !!activeRecord}
-            >
-              Start
-            </Button>
-          </SimpleGrid>
-        </form>
-      </Box>
-      <Grid
-        templateRows={'auto 1fr'}
-        templateColumns={'2fr minmax(50px, auto) 1fr'}
-        columnGap={5}
-        rowGap={5}
-        alignItems={'center'}
-      >
-        <GridItem colSpan={3} />
-
-        <Heading text={'Project'} paddingLeft={5} />
-        <Heading text={'Duration'} />
-        <Heading text={'Action'} paddingRight={5} />
-
-        <GridItem
-          colSpan={3}
-          borderBottom={'1px solid var(--chakra-colors-chakra-border-color)'}
+      {activeRecord && (
+        <ActiveRecordPanel
+          activeRecord={activeRecord}
+          note={note}
+          saveNote={saveNote}
         />
+      )}
 
-        {activeRecord && (
-          <ActiveRecordRow
-            activeRecord={activeRecord}
-            note={note}
-            saveNote={saveNote}
-          />
-        )}
-        {projects.map((project) => (
-          <>
-            <ProjectName
-              key={`project-${project.name}`}
-              name={project.name}
-              paddingLeft={5}
+      {!activeRecord && (
+        <>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              let newNote = insertRecord(
+                note,
+                nextProject,
+                OffsetDateTime.now(ZoneId.UTC)
+              );
+              setNextProject('');
+              saveNote(newNote);
+            }}
+          >
+            <Grid padding={4} templateRows={'1fr'} templateColumns={'3fr 1fr'}>
+              <GridItem>
+                <input
+                  placeholder={'What are you working on?'}
+                  style={{ width: '100%', height: '100%' }}
+                  value={nextProject}
+                  onChange={(e) => {
+                    setNextProject(e.target.value);
+                  }}
+                />
+              </GridItem>
+              <GridItem colStart={2} justifySelf={'right'} alignSelf={'center'}>
+                <Button type={'submit'} fontSize={'xl'}>
+                  Start recording
+                </Button>
+              </GridItem>
+            </Grid>
+          </form>
+          <Grid
+            templateRows={'auto 1fr'}
+            templateColumns={'2fr minmax(50px, auto) 1fr'}
+            columnGap={5}
+            rowGap={5}
+            alignItems={'center'}
+          >
+            <GridItem colSpan={3} />
+
+            <Heading text={'Project'} paddingLeft={5} />
+            <Heading text={'Duration'} />
+            <Heading text={'Action'} paddingRight={5} />
+
+            <GridItem
+              colSpan={3}
+              borderBottom={
+                '1px solid var(--chakra-colors-chakra-border-color)'
+              }
             />
-            <FormattedDuration
-              key={`duration-${project.name}`}
-              duration={project.totalTime}
-            />
-            <GridItem paddingRight={5}>
-              <Button
-                key={`actions-${project.name}`}
-                width="100%"
-                disabled={!!activeRecord}
-                fontSize={'xl'}
-                onClick={() => {
-                  let newNote = insertRecord(
-                    note,
-                    project.name,
-                    OffsetDateTime.now(ZoneId.UTC)
-                  );
-                  saveNote(newNote);
-                }}
-              >
-                Start
-              </Button>
-            </GridItem>
-          </>
-        ))}
-      </Grid>
+
+            {projects.map((project) => (
+              <>
+                <ProjectName
+                  key={`project-${project.name}`}
+                  name={project.name}
+                  paddingLeft={5}
+                />
+                <FormattedDuration
+                  key={`duration-${project.name}`}
+                  duration={project.totalTime}
+                />
+                <GridItem paddingRight={5}>
+                  <Button
+                    key={`actions-${project.name}`}
+                    width="100%"
+                    fontSize={'xl'}
+                    onClick={() => {
+                      let newNote = insertRecord(
+                        note,
+                        project.name,
+                        OffsetDateTime.now(ZoneId.UTC)
+                      );
+                      saveNote(newNote);
+                    }}
+                  >
+                    Start
+                  </Button>
+                </GridItem>
+              </>
+            ))}
+          </Grid>
+        </>
+      )}
     </div>
   );
 }
@@ -201,7 +206,11 @@ interface ActiveRecordProps {
   saveNote: (newNote: string) => void;
 }
 
-function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
+function ActiveRecordPanel({
+  activeRecord,
+  note,
+  saveNote,
+}: ActiveRecordProps) {
   const duration = useDynamicDuration(activeRecord.start);
   const isLessThanOneMinute = duration.compareTo(Duration.ofMinutes(1)) < 0;
 
@@ -209,15 +218,71 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
   const startPlus1m = activeRecord.start.plus(Duration.ofMinutes(1));
 
   return (
-    <>
-      <ProjectName
-        key={'activeProject'}
-        name={activeRecord.project}
-        paddingLeft={5}
+    <Grid
+      padding={4}
+      templateRows={'1fr auto 2fr auto 1fr auto 1fr'}
+      templateColumns={'3fr 1fr'}
+      rowGap={'1'}
+    >
+      <GridItem fontSize={'3xl'}>
+        <input
+          placeholder={'What are you working on?'}
+          style={{ width: '100%' }}
+          value={activeRecord.project}
+          onChange={(e) => {
+            saveNote(renameCurrentRecord(note, e.target.value));
+          }}
+        />
+      </GridItem>
+      <GridItem
+        colStart={2}
+        justifySelf={'right'}
+        alignSelf={'center'}
+        textColor={'gray.500'}
+        textTransform={'uppercase'}
+      >
+        <Box display={'inline'}>project</Box>
+      </GridItem>
+
+      <GridItem
+        colSpan={2}
+        borderBottom={'1px'}
+        borderStyle={'dotted'}
+        borderColor={'gray.500'}
       />
-      <FormattedDuration key={'activeDuration'} duration={duration} />
-      <HStack key={'activeActions'} gap={'1'} paddingRight={5}>
+
+      <GridItem colStart={1} alignSelf={'center'}>
+        <FormattedDuration
+          key={'activeDuration'}
+          duration={duration}
+          fontSize={'6xl'}
+        />
+      </GridItem>
+      <GridItem
+        colStart={2}
+        justifySelf={'right'}
+        alignSelf={'center'}
+        textColor={'gray.500'}
+        textTransform={'uppercase'}
+      >
+        <Box display={'inline'}>duration</Box>
+      </GridItem>
+
+      <GridItem
+        colSpan={2}
+        borderBottom={'1px'}
+        borderStyle={'dotted'}
+        borderColor={'gray.500'}
+      />
+
+      <GridItem
+        alignSelf={'center'}
+        display={'flex'}
+        alignItems={'center'}
+        gap={2}
+      >
         <Button
+          display={'inline'}
           key={'plus1mButton'}
           disabled={isBeforeEndOfLastCompleted(note, startMinus1m)}
           onClick={() => {
@@ -225,11 +290,52 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
             saveNote(newNote);
           }}
         >
-          +1m
+          &lt; 1m
         </Button>
+        <span>
+          {activeRecord.start
+            .atZoneSameInstant(ZoneId.SYSTEM)
+            .format(DateTimeFormatter.ofPattern('dd.MM.yyyy HH:mm:ss'))}
+        </span>
         <Button
-          key={'stopButton'}
-          flexGrow={1}
+          display={'inline'}
+          key={'minus1mButton'}
+          disabled={isLessThanOneMinute}
+          onClick={() => {
+            let newNote = changeStartOfCurrentRecord(note, startPlus1m);
+            saveNote(newNote);
+          }}
+        >
+          1m &gt;
+        </Button>
+      </GridItem>
+      <GridItem
+        colStart={2}
+        justifySelf={'right'}
+        alignSelf={'center'}
+        textColor={'gray.500'}
+        textTransform={'uppercase'}
+      >
+        <Box display={'inline'}>started at</Box>
+      </GridItem>
+
+      <GridItem
+        colSpan={2}
+        borderBottom={'1px'}
+        borderStyle={'dotted'}
+        borderColor={'gray.500'}
+      />
+
+      <GridItem colSpan={2} justifySelf={'right'} alignSelf={'center'}>
+        <Button
+          fontSize={'xl'}
+          onClick={() => saveNote(discardCurrentRecord(note))}
+        >
+          Discard
+        </Button>
+        &nbsp;
+        <Button
+          disabled={activeRecord.project === ''}
           fontSize={'xl'}
           onClick={() => {
             let newNote = stopCurrentRecord(
@@ -239,20 +345,10 @@ function ActiveRecordRow({ activeRecord, note, saveNote }: ActiveRecordProps) {
             saveNote(newNote);
           }}
         >
-          Stop
+          Stop recording
         </Button>
-        <Button
-          key={'minus1mButton'}
-          disabled={isLessThanOneMinute}
-          onClick={() => {
-            let newNote = changeStartOfCurrentRecord(note, startPlus1m);
-            saveNote(newNote);
-          }}
-        >
-          -1m
-        </Button>
-      </HStack>
-    </>
+      </GridItem>
+    </Grid>
   );
 }
 

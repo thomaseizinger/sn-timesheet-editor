@@ -3,6 +3,8 @@ import {
   parseRecords,
   changeStartOfCurrentRecord,
   stopCurrentRecord,
+  renameCurrentRecord,
+  discardCurrentRecord,
 } from './note';
 import { Instant, OffsetDateTime, ZoneId } from '@js-joda/core';
 
@@ -97,4 +99,36 @@ test('refuses to change start of current record to before end of previous one', 
       OffsetDateTime.ofInstant(Instant.ofEpochMilli(1656095744000), ZoneId.UTC)
     );
   }).toThrow('');
+});
+
+test('can rename current record', () => {
+  let records = `2,xtra,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`;
+
+  let newRecords = renameCurrentRecord(records, 'foobar');
+
+  expect(newRecords).toStrictEqual(
+    `2,foobar,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
+  );
+});
+
+test('refuses to rename completed record', () => {
+  let records = `2,xtra,2022-06-24T18:38:31Z,2022-06-24T19:45:11Z
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`;
+
+  expect(() => {
+    renameCurrentRecord(records, 'foobar');
+  }).toThrow(/Cannot change completed record/);
+});
+
+test('can discard current record', () => {
+  let records = `2,xtra,2022-06-24T18:38:31Z,
+1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`;
+
+  let newRecords = discardCurrentRecord(records);
+
+  expect(newRecords).toStrictEqual(
+    `1,libp2p,2022-06-24T16:35:15.000Z,2022-06-24T18:35:45.000Z`
+  );
 });

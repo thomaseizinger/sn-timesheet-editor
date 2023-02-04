@@ -6,7 +6,9 @@ This repository contains an editor for maintaining a simple timesheet in CSV for
 
 ## UI
 
-![Screenshot from 2022-10-08 17-40-44](https://user-images.githubusercontent.com/5486389/194693791-c51953ef-979a-44dd-bd9a-4430a1f757cc.png)
+| Overview                                                                                                                                     | Recording                                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Screenshot from 2023-02-04 15-07-44](https://user-images.githubusercontent.com/5486389/216740894-cf370560-d652-49be-945d-7fa57d6f8735.png) | ![Screenshot from 2023-02-04 15-07-52](https://user-images.githubusercontent.com/5486389/216740900-db7cf9b5-d857-4772-83dd-600db1376f34.png) |
 
 ## Installation
 
@@ -14,11 +16,13 @@ Install as a custom editor from this URL: https://eizinger.io/sn-timesheet-edito
 
 ## Features
 
-- The currently running record is highlighted in green.
+- Starting to record will switch to a different view
+- The start time can be adjusted +1/-1 minute
+- Current recording can be aborted using "Discard" button
 - Each project has a separate "Start timer" button to resume work on it.
 - The total of duration is displayed in the note preview.
 
-To delete or edit an something, please switch to plain text mode.
+To delete or edit something, please switch to plain text mode.
 
 ## Usage considerations
 
