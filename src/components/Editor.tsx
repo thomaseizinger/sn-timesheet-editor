@@ -25,8 +25,9 @@ import {
   ZoneId,
 } from '@js-joda/core';
 import formatSeconds from '../formatSeconds';
-import { parseProjects } from '../project';
+import { parseProjects, printProjects } from '../project';
 import { useInterval } from 'usehooks-ts';
+import downloadCsv from '../downloadCsv';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
@@ -147,6 +148,28 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
               </>
             ))}
           </Grid>
+
+          {projects.length > 0 && (
+            <>
+              <Box paddingTop={4}>
+                <hr />
+              </Box>
+
+              <Box padding={4} textAlign={'right'}>
+                <Button
+                  fontSize={'xl'}
+                  onClick={() => {
+                    let projectsCsv = printProjects(projects);
+                    let csv = `Item,Duration\n${projectsCsv}`;
+
+                    downloadCsv(csv, 'summary.csv');
+                  }}
+                >
+                  Download summary
+                </Button>
+              </Box>
+            </>
+          )}
         </>
       )}
     </div>
