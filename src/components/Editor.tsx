@@ -36,11 +36,17 @@ export enum HtmlElementId {
 
 interface Props {
   note: string;
+  isMobile: boolean;
   saveNote: (newNote: string) => void;
   setPreview: (newPreview: string) => void;
 }
 
-export default function Editor({ note, saveNote, setPreview }: Props) {
+export default function Editor({
+  note,
+  isMobile,
+  saveNote,
+  setPreview,
+}: Props) {
   const [nextProject, setNextProject] = useState('');
 
   let [completedRecords, activeRecord] = parseRecords(note);
@@ -149,7 +155,7 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
             ))}
           </Grid>
 
-          {projects.length > 0 && (
+          {projects.length > 0 && !isMobile && (
             <>
               <Box paddingTop={4}>
                 <hr />
