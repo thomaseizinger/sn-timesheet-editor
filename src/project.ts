@@ -32,3 +32,11 @@ export function parseProjects(records: CompletedRecord[]): Project[] {
 
   return projects;
 }
+
+export function printProjects(projects: Project[]): string {
+  return projects
+    .map((project) => {
+      return `${project.name},${project.totalTime.seconds()}`;
+    })
+    .join('\n');
+}
