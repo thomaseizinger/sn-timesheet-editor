@@ -3,6 +3,7 @@ import EditorKitBase from '@standardnotes/editor-kit';
 
 export function useNote(): [
   string,
+  boolean,
   (newText: string) => void,
   (newPreview: string) => void
 ] {
@@ -27,6 +28,7 @@ export function useNote(): [
 
   return [
     note,
+    editorKit?.isRunningInMobileApplication() ?? false,
     (newText: string) => {
       editorKit?.onEditorValueChanged(newText);
       setNote(newText);
