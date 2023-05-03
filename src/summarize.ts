@@ -1,14 +1,14 @@
 import { parse } from 'papaparse';
 
 export default function summarize(inputCSV: string): string {
-  const parsedCSV = parse(inputCSV, {
+  const parsedCSV = parse<string[]>(inputCSV, {
     header: false,
     skipEmptyLines: true,
   });
 
   const durations: Record<string, number> = {};
 
-  parsedCSV.data.forEach((row: string[]) => {
+  parsedCSV.data.forEach((row) => {
     const [_, task, start, end] = row;
     const startDate = new Date(start);
     const endDate = new Date(end);

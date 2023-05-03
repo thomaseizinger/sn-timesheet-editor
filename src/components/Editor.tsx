@@ -27,6 +27,8 @@ import {
 import formatSeconds from '../formatSeconds';
 import { parseProjects } from '../project';
 import { useInterval } from 'usehooks-ts';
+import { app } from 'electron';
+import summarize from '../summarize';
 
 export enum HtmlElementId {
   snComponent = 'sn-component',
@@ -147,10 +149,49 @@ export default function Editor({ note, saveNote, setPreview }: Props) {
               </>
             ))}
           </Grid>
+
+          <Box paddingTop={4}>
+            <hr />
+          </Box>
+
+          <Box padding={4} textAlign={'right'}>
+            <Button
+              disabled={projects.length === 0}
+              fontSize={'xl'}
+              onClick={() => {
+                downloadCsv(summarize(note), 'summary.csv');
+              }}
+            >
+              Download summary
+            </Button>
+          </Box>
         </>
       )}
     </div>
   );
+}
+
+function downloadCsv(csv: string, filename: string): void {
+  // Create a Blob object from the CSV data
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
+
+  // Create a new anchor element
+  const link = document.createElement('a');
+  link.href = url;
+
+  // Set the download attribute to force a file download
+  link.download = filename;
+
+  // Simulate a click on the anchor element
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Release the URL resource
+  URL.revokeObjectURL(url);
 }
 
 interface HeadingProps {
