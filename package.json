@@ -82,5 +82,10 @@
     "react-scripts": "5.0.1",
     "typescript": "^4.7.3",
     "usehooks-ts": "^2.6.0"
+  },
+  "dependencies": {
+    "@types/papaparse": "^5.3.7",
+    "date-fns": "^2.30.0",
+    "papaparse": "^5.4.1"
   }
 }
